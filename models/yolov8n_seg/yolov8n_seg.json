@@ -1,0 +1,37 @@
+{
+  "ConfigVersion": 10,
+  "Checksum": "e4491e040132b3b23e36daecf71ca4995dafee20832f56105b4333c0a1f91bdd",
+  "DEVICE": [
+    {
+      "DeviceType": "HAILO8",
+      "RuntimeAgent": "HAILORT",
+      "SupportedDeviceTypes": "HAILORT/HAILO8"
+    }
+  ],
+  "PRE_PROCESS": [
+    {
+      "InputType": "Image",
+      "InputN": 1,
+      "InputH": 640,
+      "InputW": 640,
+      "InputC": 3,
+      "InputPadMethod": "letterbox",
+      "InputResizeMethod": "bilinear",
+      "InputQuantEn": true
+    }
+  ],
+  "MODEL_PARAMETERS": [
+    {
+      "ModelPath": "yolov8n_seg.hef"
+    }
+  ],
+  "POST_PROCESS": [
+    {
+      "OutputPostprocessType": "SegmentationYoloV8",
+      "LabelsPath": "crack.json",
+      "OutputNumClasses": 1,
+      "OutputConfThreshold": 0.3,
+      "SigmoidOnCLS": true
+    }
+  ]
+}
