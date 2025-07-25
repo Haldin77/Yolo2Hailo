@@ -1,4 +1,6 @@
-# YOLOv8‑Seg `best.pt` → HEF Hailo‑8
+# YOLOv8‑Seg best.pt → HEF Hailo‑8
+
+Projet réalisé au sein du laboratoire CRIStAL — Université de Lille.
 
 **Déploiement sur Raspberry Pi 5 + Hailo‑8 / Hailo‑8L**
 *Version : Juillet 2025*
@@ -167,4 +169,8 @@ hailomz compile yolov8m_seg \
 * `yolov8m_seg.hef`
 * `yolov8m_seg.runtime.json`
 * `compile_report.html`
+
+## Guide d'utilisation sur Raspberry Pi 5
+
+Pour les instructions détaillées de déploiement sur Raspberry Pi 5, consultez le fichier [Guide](https://github.com/Haldin77/Yolo2Hailo/edit/main/models/README.md).
 
