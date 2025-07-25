@@ -1,101 +1,99 @@
-# Guide : Utiliser un modèle HEF YOLOv8‑Seg avec DeGirum PySDK et Hailo‑8 sur Raspberry Pi 5
+# Guide: Using a HEF YOLOv8‑Seg Model with DeGirum PySDK and Hailo‑8 on Raspberry Pi 5
 
-Ce guide s’appuie sur le tutoriel **“Using DeGirum PySDK, DeGirum Tools, and Hailo Hardware”** et montre comment :
+This guide builds on the tutorial **“Using DeGirum PySDK, DeGirum Tools, and Hailo Hardware”** and explains how to:
 
-1. Préparer votre environnement Raspberry Pi 5 + Hailo‑8 / Hailo‑8L.
-2. Installer la boîte à outils DeGirum.
-3. Organiser votre *zoo* local de modèles et déployer votre modèle compilé (`yolov8n_seg`).
+1. Prepare your Raspberry Pi 5 equipped with a Hailo‑8 or Hailo‑8L accelerator.
+2. Install the DeGirum tool‑chain.
+3. Organize a local *model zoo* and deploy your compiled model (`yolov8n_seg`).
 
 ---
 
-## Table des matières
+## Table of Contents
 
 1. [Introduction](#introduction)
-2. [Prérequis](#prérequis)
+2. [Prerequisites](#prerequisites)
 3. [Installation](#installation)
-4. [Organisation du dossier `models/`](#organisation-du-dossier-models)
-5. [Exécution et configuration des notebooks Jupyter](#exécution-et-configuration-des-notebooks-jupyter)
-6. [Exemple de script d’inférence](#exemple-de-script-dinférence)
-7. [Ressources supplémentaires](#ressources-supplémentaires)
+4. [Organizing the `models/` Folder](#organizing-the-models-folder)
+5. [Running & Configuring Jupyter Notebooks](#running--configuring-jupyter-notebooks)
+6. [Example Inference Script](#example-inference-script)
+7. [Additional Resources](#additional-resources)
 
 ---
 
 ## Introduction
 
-DeGirum offre une suite d’outils permettant de simplifier le développement et le déploiement d’applications **Edge AI** :
+**DeGirum** provides a set of tools that simplify the development and deployment of **Edge AI** applications:
 
-* **DeGirum PySDK** : bibliothèque centrale pour intégrer l’inférence IA dans vos applications.
-* **DeGirum Tools** : utilitaires pour le benchmark, le streaming et l’interaction avec le *model zoo* DeGirum.
+* **DeGirum PySDK** – the core Python library for integrating AI inference into your apps.
+* **DeGirum Tools** – utilities for benchmarking, streaming, and interacting with the DeGirum *model zoo*.
 
-Ces outils sont **agnostiques au matériel** ; vous pouvez donc créer des solutions flexibles et évolutives sur plusieurs plateformes, notamment **Hailo‑8** et **Hailo‑8L**.
+Because these tools are **hardware‑agnostic**, you can create flexible and scalable solutions that run on various platforms, including **Hailo‑8** and **Hailo‑8L**.
 
 ---
 
-## Prérequis
+## Prerequisites
 
-| Élément                           | Version / Détails                                            |
-| --------------------------------- | ------------------------------------------------------------ |
-| **Hailo Tools**                   | Installées et configurées (voir docs Hailo)                  |
-| **HailoRT Multi‑Process Service** | Activé : `sudo systemctl enable --now hailort.service`       |
-| **Hailo Runtime**                 | Versions supportées par PySDK : **4.19.0 / 4.20.0 / 4.21.0** |
-| **Python**                        | ≥ 3.9 (`python3 --version`)                                  |
-| **Raspberry Pi OS**               | 64‑bits, à jour                                              |
+| Component                         | Version / Notes                                           |
+| --------------------------------- | --------------------------------------------------------- |
+| **Hailo Tools**                   | Installed and configured (see official Hailo docs)        |
+| **HailoRT Multi‑Process Service** | Enabled: `sudo systemctl enable --now hailort.service`    |
+| **Hailo Runtime**                 | Versions supported by PySDK: **4.19.0 / 4.20.0 / 4.21.0** |
+| **Python**                        | ≥ 3.9 (`python3 --version`)                               |
+| **Raspberry Pi OS**               | 64‑bit, fully updated                                     |
 
 ---
 
 ## Installation
 
-> **Astuce :** les étapes ci‑dessous reprennent celles du dépôt `hailo_examples` de DeGirum.
+> **Tip:** The steps below mirror the DeGirum `hailo_examples` repository.
 
-### 1. Cloner le dépôt d’exemples
+### 1. Clone the example repository
 
 ```bash
 git clone https://github.com/DeGirum/hailo_examples.git
 cd hailo_examples
 ```
 
-### 2. Créer un environnement virtuel
+### 2. Create a virtual environment
 
 ```bash
 python3 -m venv degirum_env
-source degirum_env/bin/activate   # Linux / macOS
-# ou, sous Windows :
+source degirum_env/bin/activate  # Linux / macOS
+# On Windows:
 # degirum_env\Scripts\activate
 ```
 
-### 3. Installer les dépendances
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Ajouter l’environnement virtuel à Jupyter (optionnel)
-
-Si vous prévoyez d’utiliser des notebooks Jupyter :
+### 4. (Optional) Add the venv to Jupyter
 
 ```bash
 python -m ipykernel install --user --name=degirum_env --display-name "Python (degirum_env)"
 ```
 
-### 5. Vérifier l’installation
+### 5. Verify the installation
 
 ```bash
 python test.py
 ```
 
-Ce script :
+The script will:
 
-1. Affiche les infos système.
-2. Vérifie la détection du matériel Hailo.
-3. Charge un modèle d’exemple et lance une inférence.
+1. Print system information.
+2. Detect Hailo hardware.
+3. Load a sample model and run an inference.
 
-Si tout se passe bien, votre environnement est prêt ! ✅
+If everything passes, your environment is ready ! ✅
 
 ---
 
-## Organisation du dossier `models/`
+## Organizing the `models/` Folder
 
-Pour que l’appel :
+For the following call to work:
 
 ```python
 model = dg.load_model(
@@ -106,35 +104,32 @@ model = dg.load_model(
 )
 ```
 
-fonctionne, la structure attendue est la suivante :
+the directory structure must look like this:
 
 ```
 /home/robucar/hailo_examples/models/
 └── yolov8n_seg/
-    ├── yolov8n_seg.hef            # Graphe compilé pour Hailo
-    ├── yolov8n_seg.json           # Fichier de configuration DeGirum
-    ├── crack.json                 # Label map (1 classe « crack »)
+    ├── yolov8n_seg.hef        # Compiled graph for Hailo
+    ├── yolov8n_seg.json       # DeGirum configuration
+    └── crack.json             # Label map (1 class: "crack")
 ```
 
-### Rôle de chaque fichier
+### File responsibilities
 
-| Fichier                       | Description                                                             |
-| ----------------------------- | ----------------------------------------------------------------------- |
-| **yolov8n\_seg.hef**          | Network Binary compilé via Hailo Dataflow Compiler.                     |
-| **yolov8n\_seg.json**         | Configuration DeGirum (pré‑/post‑process, device, chemin vers le .hef). |
-| **crack.json**                | Dictionnaire des labels (clé numérique → nom de classe).                |
+| File                  | Purpose                                                    |
+| --------------------- | ---------------------------------------------------------- |
+| **yolov8n\_seg.hef**  | Network binary compiled via Hailo Dataflow Compiler.       |
+| **yolov8n\_seg.json** | DeGirum config (pre/post‑process, device, path to `.hef`). |
+| **crack.json**        | Label dictionary (numeric key → class name).               |
 
+> **Important:** The folder name **and** the filename prefix must match the `model_name` supplied to `dg.load_model`.
 
-> **Important :** le nom du dossier **et** le préfixe des fichiers doivent correspondre à `model_name` passé à `dg.load_model`.
-
-#### Exemple minimal de `yolov8n_seg.json`
-
-**Voir plus bas pour une version complète automatique.**
+#### Minimal `yolov8n_seg.json` example
 
 ```json
 {
   "ConfigVersion": 11,
-  "Checksum": "<sha256_du_hef>",
+  "Checksum": "<sha256_of_hef>",
   "DEVICE": [{
     "DeviceType": "HAILO8",
     "RuntimeAgent": "HAILORT",
@@ -163,13 +158,7 @@ fonctionne, la structure attendue est la suivante :
 }
 ```
 
-#### Étapes détaillées de création manuelle
-
-1. **Checksum** : exécutez `sha256sum yolov8n_seg.hef` et copiez la valeur dans la clé `Checksum`.
-2. **ConfigVersion** : utiliser `11` (schéma courant).
-3. **DEVICE / PRE\_PROCESS / MODEL\_PARAMETERS / POST\_PROCESS** : adaptez si vous changez la taille d’entrée, le nombre de classes ou le nom du `.hef`.
-
-#### Génération automatique par script
+#### Automatic config generation script
 
 ```python
 import json, hashlib
@@ -204,60 +193,28 @@ config = {
 }
 with open("yolov8n_seg.json", "w") as f:
     json.dump(config, f, indent=2)
-print("yolov8n_seg.json créé ✔")
+print("yolov8n_seg.json created ✔")
 ```
-
-*Le script calcule automatiquement le SHA‑256 du `.hef` et écrit le JSON prêt à l’emploi.*
-
-```json
-{
-  "ConfigVersion": 10,
-  "DEVICE": [{
-    "DeviceType": "HAILO8",
-    "RuntimeAgent": "HAILORT",
-    "SupportedDeviceTypes": "HAILORT/HAILO8"
-  }],
-  "PRE_PROCESS": [{
-    "InputType": "Image",
-    "InputN": 1,
-    "InputH": 640,
-    "InputW": 640,
-    "InputC": 3,
-    "InputPadMethod": "letterbox"
-  }],
-  "MODEL_PARAMETERS": [{
-    "ModelPath": "yolov8n_seg.hef"
-  }],
-  "POST_PROCESS": [{
-    "OutputPostprocessType": "SegmentationYoloV8",
-    "LabelsPath": "crack.json",
-    "OutputNumClasses": 1,
-    "OutputConfThreshold": 0.3
-  }]
-}
-```
-
-Si vous changez le nombre de classes ou le seuil de confiance, modifiez `OutputNumClasses`, `LabelsPath` et `OutputConfThreshold` en conséquence.
 
 ---
 
-## Exécution et configuration des notebooks Jupyter
+## Running & Configuring Jupyter Notebooks
 
-1. Lancez Jupyter :
+1. Start Jupyter:
 
    ```bash
-   jupyter lab  # ou jupyter notebook
+   jupyter lab  # or jupyter notebook
    ```
-2. Dans l’interface, choisissez le kernel **“Python (degirum\_env)”** pour vos notebooks.
-3. Les notebooks du dépôt `hailo_examples/notebooks/` couvrent :
+2. In the browser, select the **“Python (degirum\_env)”** kernel for your notebooks.
+3. The notebooks under `hailo_examples/notebooks/` cover:
 
-   * Benchmark de latence/débit.
-   * Streaming vidéo.
-   * Interfaçage avec le *model zoo* DeGirum.
+   * Latency/throughput benchmarking.
+   * Video streaming.
+   * Interaction with the DeGirum *model zoo*.
 
 ---
 
-## Exemple de script d’inférence
+## Example Inference Script
 
 ```python
 import degirum as dg
@@ -273,7 +230,7 @@ result = model("images/test.jpg")
 print(result)
 ```
 
-Ajouter un chronomètre :
+Add a simple latency benchmark:
 
 ```python
 import time
@@ -285,12 +242,12 @@ print("Avg latency (ms):", (time.time()-start)/30*1000)
 
 ---
 
-## Ressources supplémentaires
+## Additional Resources
 
-* **Documentation DeGirum PySDK** : [https://docs.degirum.com/pysdk](https://docs.degirum.com/pysdk)
-* **Projet `hailo_examples`** : [https://github.com/DeGirum/hailo\_examples](https://github.com/DeGirum/hailo_examples)
-* **Documentation Hailo** : [https://docs.hailo.ai](https://docs.hailo.ai)
+* **DeGirum PySDK Documentation:** [https://docs.degirum.com/pysdk](https://docs.degirum.com/pysdk)
+* **`hailo_examples` Repository:** [https://github.com/DeGirum/hailo\_examples](https://github.com/DeGirum/hailo_examples)
+* **Hailo Documentation:** [https://docs.hailo.ai](https://docs.hailo.ai)
 
 ---
 
-*Fin du guide.*
+*End of guide.*
